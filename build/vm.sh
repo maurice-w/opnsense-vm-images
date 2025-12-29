@@ -175,6 +175,7 @@ else
 fi
 
 if [ "${3}" == "never" ]; then
+	GPTBOOT=
 	GPTDUMMY=
 fi
 
