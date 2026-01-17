@@ -102,7 +102,7 @@ if [ -n "${PRODUCT_ZFS}" ]; then
 	GPTNAME=gptzfsboot
 	ROOTFS=zfs
 else
-	newfs /dev/${DEV}
+	newfs -t /dev/${DEV}
 	mount /dev/${DEV} ${STAGEDIR}/mnt
 
 	GPTNAME=gptboot
