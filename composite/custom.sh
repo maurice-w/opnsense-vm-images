@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright (c) 2023 Franco Fichtner <franco@opnsense.org>
+# Copyright (c) 2023-2026 Franco Fichtner <franco@opnsense.org>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -29,9 +29,15 @@ set -e
 
 . $(dirname ${0})/util.sh
 
-IMAGE=${1}
+IMAGE=${1%%,*}
+EXTRA=
 
-load_make_vars PLUGINSDIR PLUGINSENV
+if [ ${IMAGE} != ${1} ]; then
+	EXTRA=${1#*,}
+fi
+
+load_make_vars PLUGINSDIR PLUGINSENV PRODUCT_ARCH PRODUCT_CORE \
+    PRODUCT_SUFFIX PRODUCT_ZFS_REQUESTED SETSDIR
 
 # handle path-based plugins as custom install for target image
 MISSING=
@@ -74,10 +80,19 @@ for PLUGIN in ${MISSING}; do
 	PLUGINS="${PLUGINS} ${PLUGIN}"
 done
 
-if [ -n "${IMAGE}" = "factory" ]; then
-	_IMAGE=vm
-else
-	_IMAGE=${IMAGE}
-fi
+CORE_VERSION=$(load_core_version ${SETSDIR} ${PRODUCT_ARCH} ${PRODUCT_CORE})
 
-make clean-${_IMAGE} ${IMAGE} ADDITIONS="${ADDITIONS}" SUFFIX="${SUFFIX}"
+if [ "${IMAGE}" = "factory" ]; then
+	FS=ufs
+	if [ -n "${PRODUCT_ZFS_REQUESTED}" ]; then
+		FS=zfs
+	fi
+
+	make clean-vm vm-${EXTRA:-raw},4G,never,serial compress-vm \
+	    ADDITIONS="${ADDITIONS}" SUFFIX="${PRODUCT_SUFFIX}" \
+	    VERSION=${CORE_VERSION}${NAMESUFFIX}-${FS}
+else
+	make clean-${IMAGE} ${IMAGE}-${EXTRA} compress-${IMAGE} \
+	    ADDITIONS="${ADDITIONS}" SUFFIX="${PRODUCT_SUFFIX}" \
+	    VERSION=${CORE_VERSION}
+fi

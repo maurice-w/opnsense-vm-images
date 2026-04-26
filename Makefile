@@ -29,7 +29,7 @@ STEPS=		audit arm base boot chroot clean clone compress confirm \
 		plugins ports prefetch print rebase release rename \
 		serial sign skim sync test tests update upload \
 		verify vga vm xtools
-SCRIPTS=	custom distribution factory hotfix nightly pkgver watch
+SCRIPTS=	custom distribution hotfix nightly pkgver watch
 
 .PHONY:		${STEPS} ${SCRIPTS}
 
@@ -158,6 +158,7 @@ release: dvd nano serial vga
 
 .for TARGET in ${.TARGETS}
 _TARGET=	${TARGET:C/\-.*//}
+.if ${_TARGET:tl} == ${_TARGET}
 .if ${_TARGET} != ${TARGET}
 .if ${SCRIPTS:M${_TARGET}}
 ${_TARGET}_ARGS+=	${TARGET:C/^[^\-]*(\-|\$)//}
@@ -165,6 +166,7 @@ ${_TARGET}_ARGS+=	${TARGET:C/^[^\-]*(\-|\$)//}
 ${_TARGET}_ARGS+=	${TARGET:C/^[^\-]*(\-|\$)//:S/,/ /g}
 .endif
 ${TARGET}: ${_TARGET}
+.endif
 .endif
 .endfor
 
