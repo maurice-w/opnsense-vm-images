@@ -861,6 +861,7 @@ remove_packages()
 	echo ">>> Removing packages in ${BASEDIR}: ${PKGLIST}"
 
 	for PKG in ${PKGLIST}; do
+		PKG=$(echo ${PKG} | tr '%' '*')
 		for PKGFILE in $(cd ${BASEDIR}${PACKAGESDIR}; \
 		    find All -name "${PKG}-[0-9]*.pkg" -type f); do
 			rm ${BASEDIR}${PACKAGESDIR}/${PKGFILE}
@@ -1051,7 +1052,7 @@ bundle_packages()
 
 	# generate all signatures and add bootstrap links
 	for PKGFILE in $(cd ${BASEDIR}${PACKAGESDIR}-new; \
-	    find All -type f); do
+	    find -s All -type f); do
 		PKGINFO=$(pkg info -F ${BASEDIR}${PACKAGESDIR}-new/${PKGFILE} \
 		    | grep ^Name | awk '{ print $3; }')
 		LATESTDIR=${BASEDIR}${PACKAGESDIR}-new/Latest
