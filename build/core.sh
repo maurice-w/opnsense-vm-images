@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright (c) 2014-2025 Franco Fichtner <franco@opnsense.org>
+# Copyright (c) 2014-2026 Franco Fichtner <franco@opnsense.org>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -77,6 +77,11 @@ for BRANCH in ${EXTRABRANCH} ${COREBRANCH}; do
 	if search_packages ${STAGEDIR} ${CORE_NAME} ${CORE_VERS} ${BRANCH}; then
 		# already built
 		continue
+	fi
+
+	if [ -n "${CORE_VERS%%*.*}" ]; then
+		echo "Invalid version detected: ${CORE_NAME}-${CORE_VERS} via ${BRANCH}" >&2
+		exit 1
 	fi
 
 	install_packages ${STAGEDIR} ${CORE_DEPS}
