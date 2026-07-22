@@ -58,15 +58,18 @@ for PORT in ${PORTSLIST}; do
 	if [ -n "${SET}" ]; then
 		for OPT in ${SET}; do
 			for DEFAULT in ${DEFAULTS}; do
-				if [ ${OPT} == EXAMPLES ]; then
-					# ignore since defaults to off
-					# but is required for acme.sh
+				case ${ARG} in
+				DOCS|EXAMPLES)
+					# ignore since it defaults to off
 					continue
-				fi
-				if [ ${OPT} == ${DEFAULT} ]; then
-					echo "${PORT}: ${OPT} is set by default"
-					RET=1
-				fi
+					;;
+				*)
+					if [ ${OPT} == ${DEFAULT} ]; then
+						echo "${PORT}: ${OPT} is set by default"
+						RET=1
+					fi
+					;;
+				esac
 			done
 		done
 	fi
