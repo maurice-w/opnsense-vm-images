@@ -27,10 +27,10 @@ IMAGES=		arm dvd nano serial vga vm
 STEPS=		audit arm base boot chroot clean clone compress confirm \
 		connect core distfiles download dvd fingerprint info \
 		kernel list make.conf nano obsolete options packages \
-		plugins ports prefetch print rebase release rename \
-		serial sign skim sync test tests update upload \
+		pkgbase plugins ports prefetch print rebase release \
+		rename serial sign skim sync test tests update upload \
 		verify vga vm xtools
-SCRIPTS=	custom distribution hotfix nightly pkgver watch
+SCRIPTS=	custom distribution hotfix nightly pkgver source watch
 
 .PHONY:		${STEPS} ${SCRIPTS}
 
@@ -93,6 +93,7 @@ _CONFIGDIR=	${__CONFIGDIR:[1]:C/\/build\.conf$//}
 .include "${_CONFIGDIR}/build.conf"
 
 _ARCH!=		uname -p
+_TIMESTAMP!=	date '+%s'
 _VERSION!=	date '+%Y%m%d%H%M'
 
 # Bootstrap the build options if not set:
@@ -106,6 +107,7 @@ DEVICE?=	A10
 KERNEL?=	SMP
 NAME?=		OPNsense
 SUFFIX?=	# empty
+TIMESTAMP?=	${_TIMESTAMP}
 TYPE?=		${NAME:tl}
 UEFI?=		arm dvd serial vga vm
 VERSION?=	${_VERSION}
@@ -151,7 +153,7 @@ kernel ports distfiles: base
 audit plugins: ports
 core: plugins
 packages test: core
-${IMAGES}: kernel
+pkgbase ${IMAGES}: kernel
 .if !defined(BARE)
 ${IMAGES}: core
 .endif
@@ -193,7 +195,7 @@ ${STEP}: lint-steps
 	@echo ">>> Executing build step ${STEP} on ${_CONFIGDIR:C/.*\///}" >&2
 	${VERBOSE_HIDDEN} cd ${TOOLSDIR}/build && \
 	    sh ${VERBOSE_FLAGS} ./${.TARGET}.sh -a ${ARCH} -F ${KERNEL} \
-	    -n ${NAME} -v "${VERSIONS}" -s ${_CONFIGDIR} \
+	    -n ${NAME} -v "${VERSIONS}" -s ${_CONFIGDIR} -Q ${TIMESTAMP} \
 	    -S ${SRCDIR} -P ${PORTSDIR} -p ${PLUGINSDIR} -T ${TOOLSDIR} \
 	    -C ${COREDIR} -R ${PORTSREFDIR} -t ${TYPE} -k "${PRIVKEY}" \
 	    -K "${PUBKEY}" -l "${SIGNCHK}" -L "${SIGNCMD}" -d ${DEVICE} \

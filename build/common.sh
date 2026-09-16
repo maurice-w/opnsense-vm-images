@@ -28,7 +28,7 @@
 
 set -e
 
-OPTS="A:a:B:b:C:c:D:d:E:e:F:f:G:g:H:h:I:J:K:k:L:l:m:n:O:o:P:p:R:r:S:s:T:t:U:u:v:V:"
+OPTS="A:a:B:b:C:c:D:d:E:e:F:f:G:g:H:h:I:J:K:k:L:l:m:n:O:o:P:p:Q:R:r:S:s:T:t:U:u:v:V:"
 
 while getopts ${OPTS} OPT; do
 	case ${OPT} in
@@ -133,6 +133,9 @@ while getopts ${OPTS} OPT; do
 		;;
 	p)
 		export PLUGINSDIR=${OPTARG}
+		;;
+	Q)
+		export PRODUCT_TIMESTAMP=${OPTARG}
 		;;
 	R)
 		export PORTSREFDIR=${OPTARG}
@@ -754,11 +757,11 @@ check_packages()
 	local SELF=${1}
 	SKIP=${2}
 
-	PKG_WANT=$(make -C ${PORTSDIR}/ports-mgmt/pkg -v PORTVERSION | cut -d. -f 1-2)
+	PKG_WANT=$(make -C ${PORTSDIR}/opnsense/pkg -v PORTVERSION | cut -d. -f 1-2)
 	PKG_HAVE=$(pkg -v | cut -d. -f 1-2)
 	if [ "${PKG_WANT}" != "${PKG_HAVE}" ]; then
 		echo "Installed pkg version '${PKG_HAVE}' does not match required version '${PKG_WANT}'" >&2
-		echo "To fix this please run 'make -C ${PORTSDIR}/ports-mgmt/pkg clean all reinstall'" >&2
+		echo "To fix this please run 'make -C ${PORTSDIR}/opnsense/pkg clean all reinstall'" >&2
 		exit 1
 	fi
 
@@ -796,7 +799,7 @@ find_set()
 	kernel)
 		echo $(find ${SETSDIR} -name "kernel-*-${PRODUCT_ARCH}${PRODUCT_DEVICE+"-${PRODUCT_DEVICE}"}.txz")
 		;;
-	aux|packages|release)
+	aux|packages|pkgbase|release)
 		echo $(find ${SETSDIR} -name "${1}-*-${PRODUCT_ARCH}.tar")
 		;;
 	tests|xtools)

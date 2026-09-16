@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright (c) 2018-2025 Franco Fichtner <franco@opnsense.org>
+# Copyright (c) 2026 Franco Fichtner <franco@opnsense.org>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -27,32 +27,6 @@
 
 set -e
 
-SELF=upload
-
-. ./common.sh
-
-upload()
-{
-	echo ">>> Uploading ${1} to ${SERVER}..."
-	(echo "cd ${REMOTEDIR:-"."}"; echo "put ${2}/${3}") | sftp ${SERVER}
-}
-
-for ARG in ${@}; do
-	case ${ARG} in
-	arm|dvd|nano|serial|vga|vm)
-		upload ${ARG} ${IMAGESDIR} "*-${ARG}-*${PRODUCT_DEVICE+"-${PRODUCT_DEVICE}"}*"
-		;;
-	aux|distfiles|packages|pkgbase|release|tests)
-		upload ${ARG} ${SETSDIR} "${ARG}-*"
-		;;
-	base|kernel)
-		upload ${ARG} ${SETSDIR} "${ARG}-*${PRODUCT_DEVICE+"-${PRODUCT_DEVICE}"}*"
-		;;
-	log)
-		upload ${ARG} ${LOGSDIR} "${PRODUCT_VERSION}-*"
-		;;
-	logs)
-		upload ${ARG} ${LOGSDIR} "[0-9]*"
-		;;
-	esac
-done
+# clear all source build progress but not pkgbase so that it
+# can build an incrememtal update set from the previous one
+make clean-obj,base,kernel pkgbase-again
