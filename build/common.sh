@@ -28,7 +28,7 @@
 
 set -e
 
-OPTS="A:a:B:b:C:c:D:d:E:e:F:f:G:g:H:h:I:J:K:k:L:l:m:n:O:o:P:p:Q:R:r:S:s:T:t:U:u:v:V:"
+OPTS="A:a:B:b:C:D:d:E:e:f:G:g:H:h:I:J:K:k:L:l:o:P:p:R:r:S:s:T:U:"
 
 while getopts ${OPTS} OPT; do
 	case ${OPT} in
@@ -49,9 +49,6 @@ while getopts ${OPTS} OPT; do
 	C)
 		export COREDIR=${OPTARG}
 		;;
-	c)
-		export PRODUCT_COMSPEED=${OPTARG}
-		;;
 	d)
 		export PRODUCT_DEVICE_REAL=${OPTARG}
 		export PRODUCT_DEVICE=${OPTARG}
@@ -64,9 +61,6 @@ while getopts ${OPTS} OPT; do
 		;;
 	e)
 		export PLUGINSBRANCH=${OPTARG}
-		;;
-	F)
-		export PRODUCT_KERNEL=${OPTARG}
 		;;
 	f)
 		export PRODUCT_ZFS_ALLOWED=${PRODUCT_ZFS_ALLOWED:-""}
@@ -114,15 +108,6 @@ while getopts ${OPTS} OPT; do
 			export PRODUCT_SIGNCHK=${OPTARG}
 		fi
 		;;
-	m)
-		export PRODUCT_MIRROR=${OPTARG}
-		;;
-	n)
-		export PRODUCT_NAME=${OPTARG}
-		;;
-	O)
-		export PRODUCT_GITBASE=${OPTARG}
-		;;
 	o)
 		if [ -n "${OPTARG}" ]; then
 			export STAGEDIRPREFIX=${OPTARG}
@@ -133,9 +118,6 @@ while getopts ${OPTS} OPT; do
 		;;
 	p)
 		export PLUGINSDIR=${OPTARG}
-		;;
-	Q)
-		export PRODUCT_TIMESTAMP=${OPTARG}
 		;;
 	R)
 		export PORTSREFDIR=${OPTARG}
@@ -152,9 +134,6 @@ while getopts ${OPTS} OPT; do
 	T)
 		export TOOLSDIR=${OPTARG}
 		;;
-	t)
-		export PRODUCT_TYPE=${OPTARG}
-		;;
 	U)
 		case "${OPTARG}" in
 		''|-business|-devel)
@@ -165,17 +144,6 @@ while getopts ${OPTS} OPT; do
 			exit 1
 			;;
 		esac
-		;;
-	u)
-		export PRODUCT_UEFI=${OPTARG}
-		;;
-	v)
-		for _VERSION in ${OPTARG}; do
-			eval "export ${_VERSION}"
-		done
-		;;
-	V)
-		export PRODUCT_ADDITIONS=${OPTARG}
 		;;
 	*)
 		echo "${0}: Unknown argument '${OPT}'" >&2
@@ -199,6 +167,7 @@ PRODUCT_ABI
 PRODUCT_ARCH
 PRODUCT_COMSPEED
 PRODUCT_DEVICE_REAL
+PRODUCT_EMAIL
 PRODUCT_GITBASE
 PRODUCT_KERNEL
 PRODUCT_LUA
@@ -312,16 +281,18 @@ for WANT in ${PRODUCT_WANTS}; do
 	fi
 done
 
+git_switch()
+{
+	git -C ${1} switch --discard-changes ${2}
+}
+
 git_reset()
 {
 	if [ ${1} != ${TOOLSDIR} ]; then
 		git -C ${1} clean -xdqf .
 	fi
-	REPO_TAG=${2}
-	if [ -z "${REPO_TAG}" ]; then
-		git_tag ${1} ${PRODUCT_VERSION}
-	fi
-	git -C ${1} reset --hard ${REPO_TAG}
+
+	git -C ${1} reset --hard ${2}
 }
 
 git_fetch()
@@ -490,18 +461,9 @@ setup_clone()
 {
 	echo ">>> Setting up ${2} clone in ${1}"
 
-	# repositories may be huge so avoid the copy :)
-	mkdir -p ${1}${2} && mount_unionfs -o below ${2} ${1}${2}
-}
-
-setup_copy()
-{
-	echo ">>> Setting up ${2} copy in ${1}"
-
-	# in case we want to clobber HEAD
-	rm -rf ${1}${2}
-	mkdir -p $(dirname ${1}${2})
-	cp -R ${2} ${1}${2}
+	# avoid copying metadata, but keep the working tree maintainable
+	mkdir -p ${1}${2}/.git
+	mount_unionfs -o below ${2}/.git ${1}${2}/.git
 }
 
 setup_xbase()
@@ -595,7 +557,7 @@ setup_version()
 	# embed size for general information
 	echo "${SIZE}" > ${VERSIONDIR}/${3}.size
 
-        # embed commit hash for identification
+	# embed commit hash for identification
 	echo "${PRODUCT_HASH}" > ${VERSIONDIR}/${3}.hash
 
 	# embed target architecture
@@ -1225,10 +1187,10 @@ setup_stage()
 /boot/msdos
 /dev
 /mnt
-${SRCDIR}
-${PORTSDIR}
-${COREDIR}
-${PLUGINSDIR}
+${COREDIR}/.git
+${PLUGINSDIR}/.git
+${PORTSDIR}/.git
+${SRCDIR}/.git
 /
 "
 	STAGE=${1}

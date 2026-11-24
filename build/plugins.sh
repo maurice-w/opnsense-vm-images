@@ -56,9 +56,10 @@ remove_packages ${STAGEDIR} ${@}
 install_packages ${STAGEDIR} pkg git
 lock_packages ${STAGEDIR}
 
+setup_clone ${STAGEDIR} ${PLUGINSDIR}
+
 for BRANCH in ${EXTRABRANCH} ${PLUGINSBRANCH}; do
-	setup_copy ${STAGEDIR} ${PLUGINSDIR}
-	git_reset ${STAGEDIR}${PLUGINSDIR} ${BRANCH}
+	git_switch ${STAGEDIR}${PLUGINSDIR} ${BRANCH}
 
 	PREFIX=${PRODUCT_PLUGINS%"*"}
 	PLUGIN_LIST=
