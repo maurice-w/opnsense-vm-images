@@ -41,7 +41,7 @@ Update all OPNsense code repositories:
 
 Build and reinstall [pkg(8)](https://man.freebsd.org/cgi/man.cgi?query=pkg&sektion=8). This is required because the pkg version provided by FreeBSD is newer than the one used by OPNsense:
 
-    # make -C /usr/ports/ports-mgmt/pkg clean all reinstall
+    # make -C /usr/ports/opnsense/pkg clean all reinstall
 
 Building a VM image
 ===================
@@ -97,7 +97,7 @@ one can be created by downloading the individual packages and adding them to a t
 [Rsync(1)](https://man.freebsd.org/cgi/man.cgi?query=rsync) is required for downloading the packages. Installing it also updates pkg(8), so the pkg version used by OPNsense has to be reinstalled afterwards:
 
     # pkg install -y rsync
-    # make -C /usr/ports/ports-mgmt/pkg clean all reinstall
+    # make -C /usr/ports/opnsense/pkg clean all reinstall
 
 QCOW2 image (QEMU), 20 GB root partition, no swap partition, serial console, OPNsense 26.7.6-amd64, UFS file system:
 
